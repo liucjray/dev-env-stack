@@ -1,0 +1,23 @@
+format = """
+$directory $git_branch $time
+$character"""
+add_newline = false
+
+[directory]
+style = "cyan bold"
+truncate_to_repo = false
+truncation_length = 9999
+
+[git_branch]
+format = "[ $symbol$branch ](fg:#7dd3fc bg:#0f172a bold) "
+symbol = " "
+
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
+
+[time]
+disabled = false
+format = "[  $time ](fg:#67e8f9 bg:#111827 bold) "
+time_format = "%H:%M:%S"
+
