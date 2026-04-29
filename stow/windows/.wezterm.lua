@@ -145,7 +145,6 @@ return {
   cursor_blink_rate = 600,
   colors = {
     foreground = "#f8fafc",
-    background = "#39465f",
     cursor_bg = "#67e8f9",
     cursor_border = "#67e8f9",
     cursor_fg = "#0f172a",
