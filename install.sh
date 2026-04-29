@@ -46,15 +46,30 @@ backup_existing_file() {
   fi
 }
 
+install_windows_wezterm() {
+  local source_path="$repo_root/stow/windows/.wezterm.lua"
+  local target_path="$windows_target/.wezterm.lua"
+
+  if [[ -L "$target_path" ]]; then
+    local backup_path="${target_path}.link.bak.$(date +%Y%m%d%H%M%S)"
+    echo "Backing up existing Windows WezTerm symlink to $backup_path"
+    mv "$target_path" "$backup_path"
+  elif [[ -e "$target_path" ]]; then
+    backup_existing_file "$target_path" "Windows WezTerm config"
+  fi
+
+  echo "Installing Windows WezTerm config by copy to $target_path"
+  cp -f "$source_path" "$target_path"
+}
+
 echo "Using stow dir: $stow_dir"
 echo "Windows target: $windows_target"
 echo "WSL target: $wsl_target"
 
-backup_existing_file "$windows_target/.wezterm.lua" "Windows WezTerm config"
+install_windows_wezterm
 backup_existing_file "$wsl_target/.config/starship.toml" "WSL Starship config"
 backup_existing_file "$wsl_target/.tmux.conf" "WSL tmux config"
 
-stow -d "$stow_dir" -t "$windows_target" windows
 stow -d "$stow_dir" -t "$wsl_target" wsl
 
 echo "Done."

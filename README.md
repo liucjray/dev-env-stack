@@ -43,6 +43,11 @@ make check
 make preview
 ```
 
+注意：
+
+- Windows 版 WezTerm 設定會在安裝時直接複製到 `C:\Users\<你>\.wezterm.lua`
+- WSL 端設定則使用 GNU Stow 建立連結
+
 ## 使用
 
 bash helper 需要在 `~/.bashrc` 裡加一行：
@@ -59,4 +64,3 @@ source ~/.bashrc.d/dev-env-stack.sh
 - 右鍵可複製或貼上
 - `Ctrl + 滾輪` 可調字體
 - Starship 顯示路徑、分支和時間
-
