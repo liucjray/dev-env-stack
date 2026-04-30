@@ -45,8 +45,7 @@ make preview
 
 注意：
 
-- Windows 版 WezTerm 設定會在安裝時直接複製到 `C:\Users\<你>\.wezterm.lua`
-- WSL 端設定則使用 GNU Stow 建立連結
+- Windows 與 WSL 端設定皆使用 GNU Stow 建立連結
 
 ## 使用
 
@@ -61,6 +60,8 @@ source ~/.bashrc.d/dev-env-stack.sh
 - WezTerm 預設進入 WSL
 - tab 顯示目前資料夾名稱
 - 類 tmux 的 `Ctrl+b` 操作
-- 右鍵可複製或貼上
+- 右鍵可複製或貼上（有選取時複製，否則貼上）
+- `Ctrl+C` 有選取時複製，無選取時照常送 SIGINT
+- `Ctrl+V` 貼上
 - `Ctrl + 滾輪` 可調字體
 - Starship 顯示路徑、分支和時間
