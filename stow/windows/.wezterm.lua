@@ -141,6 +141,10 @@ return {
   color_scheme = "Darcula (base16)",
   window_background_opacity = 0.95,
   scrollback_lines = 10000,
+  inactive_pane_hsb = {
+    saturation = 0.8,
+    brightness = 0.6,
+  },
   adjust_window_size_when_changing_font_size = false,
   default_cursor_style = "BlinkingBar",
   cursor_blink_rate = 600,
