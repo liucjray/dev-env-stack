@@ -18,3 +18,7 @@ __wezterm_update_cwd() {
 
 PROMPT_COMMAND="__wezterm_update_title; __wezterm_update_cwd${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
 
+if command -v vivid &>/dev/null; then
+    export LS_COLORS="$(vivid generate one-dark)"
+fi
+
