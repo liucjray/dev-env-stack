@@ -2,6 +2,7 @@ format = """
 [ $directory ](fg:#f8fafc bg:#6d28d9 bold)[](fg:#6d28d9 bg:#1e1b4b)$git_branch$git_status[](fg:#1e1b4b bg:#111827)$time[](fg:#111827)
 $character"""
 add_newline = false
+command_timeout = 2000
 
 [directory]
 style = "fg:#f8fafc bg:#6d28d9 bold"
