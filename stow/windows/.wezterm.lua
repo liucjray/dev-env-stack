@@ -142,8 +142,8 @@ return {
   window_background_opacity = 0.95,
   scrollback_lines = 10000,
   inactive_pane_hsb = {
-    saturation = 0.8,
-    brightness = 0.6,
+    saturation = 0.6,
+    brightness = 0.4,
   },
   adjust_window_size_when_changing_font_size = false,
   default_cursor_style = "BlinkingBar",
@@ -153,6 +153,7 @@ return {
     cursor_bg = "#67e8f9",
     cursor_border = "#67e8f9",
     cursor_fg = "#0f172a",
+    split = "#a855f7",
     tab_bar = {
       inactive_tab_edge = "#c4b5fd",
     },
