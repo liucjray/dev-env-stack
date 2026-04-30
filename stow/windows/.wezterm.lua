@@ -139,7 +139,7 @@ return {
   font_size = 12,
   line_height = 0.9,
   color_scheme = "Darcula (base16)",
-  window_background_opacity = 0.9,
+  window_background_opacity = 0.95,
   adjust_window_size_when_changing_font_size = false,
   default_cursor_style = "BlinkingBar",
   cursor_blink_rate = 600,
@@ -204,6 +204,19 @@ return {
       end),
     } },
     { key = "o", mods = "LEADER", action = act.ShowLauncherArgs { flags = "FUZZY|WORKSPACES" } },
+    {
+      key = "c",
+      mods = "CTRL",
+      action = wezterm.action_callback(function(window, pane)
+        local selection = window:get_selection_text_for_pane(pane)
+        if selection ~= "" then
+          window:perform_action(act.CopyTo("Clipboard"), pane)
+        else
+          window:perform_action(act.SendKey { key = "c", mods = "CTRL" }, pane)
+        end
+      end),
+    },
+    { key = "v", mods = "CTRL", action = act.PasteFrom("Clipboard") },
   },
 
   window_padding = {
