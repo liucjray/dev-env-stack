@@ -4,6 +4,36 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 stow_dir="${STOW_DIR:-"$repo_root/stow"}"
 
+if ! command -v stow >/dev/null 2>&1; then
+  echo "stow is required but was not found in PATH." >&2
+  exit 1
+fi
+
+echo "Using stow dir: $stow_dir"
+
+# ── macOS ────────────────────────────────────────────────────────────────────
+if [[ "$(uname)" == "Darwin" ]]; then
+  echo "Platform: macOS"
+  echo "Target: $HOME"
+
+  backup_existing_file() {
+    local path="$1"
+    local label="$2"
+    if [[ -e "$path" && ! -L "$path" ]]; then
+      local backup_path="${path}.bak.$(date +%Y%m%d%H%M%S)"
+      echo "Backing up existing $label to $backup_path"
+      mv "$path" "$backup_path"
+    fi
+  }
+
+  backup_existing_file "$HOME/.wezterm.lua" "macOS WezTerm config"
+  stow -d "$stow_dir" -t "$HOME" macos
+
+  echo "Done."
+  exit 0
+fi
+
+# ── WSL ──────────────────────────────────────────────────────────────────────
 windows_target="${WINDOWS_TARGET:-}"
 wsl_target="${WSL_TARGET:-$HOME}"
 
@@ -29,10 +59,9 @@ if [[ "$windows_target" =~ ^[A-Za-z]:\\ ]]; then
   exit 1
 fi
 
-if ! command -v stow >/dev/null 2>&1; then
-  echo "stow is required but was not found in PATH." >&2
-  exit 1
-fi
+echo "Platform: WSL"
+echo "Windows target: $windows_target"
+echo "WSL target: $wsl_target"
 
 backup_existing_file() {
   local path="$1"
@@ -61,10 +90,6 @@ install_windows_wezterm() {
   echo "Installing Windows WezTerm config by copy to $target_path"
   cp -f "$source_path" "$target_path"
 }
-
-echo "Using stow dir: $stow_dir"
-echo "Windows target: $windows_target"
-echo "WSL target: $wsl_target"
 
 install_windows_wezterm
 backup_existing_file "$wsl_target/.config/starship.toml" "WSL Starship config"
