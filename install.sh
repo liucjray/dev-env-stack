@@ -47,7 +47,7 @@ backup_existing_file() {
 }
 
 install_windows_wezterm() {
-  local source_path="$repo_root/stow/windows/.wezterm.lua"
+  local source_path="$stow_dir/windows/.wezterm.lua"
   local target_path="$windows_target/.wezterm.lua"
 
   if [[ -L "$target_path" ]]; then
