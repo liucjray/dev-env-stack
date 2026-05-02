@@ -8,6 +8,7 @@
 
 - `stow/windows/.wezterm.lua`：Windows 版 WezTerm 設定
 - `stow/macos/.wezterm.lua`：macOS 版 WezTerm 設定
+- `stow/macos/.config/starship.toml`：macOS 的 Starship 設定
 - `stow/macos/.claude/statusline.sh`：Claude Code statusline script（macOS）
 - `stow/wsl/.config/starship.toml`：WSL bash 的 Starship 設定
 - `stow/wsl/.bashrc.d/dev-env-stack.sh`：bash helper
@@ -50,6 +51,7 @@ make preview
 注意：
 
 - Windows 與 WSL 端設定皆使用 GNU Stow 建立連結
+- macOS 安裝後需在 `~/.zshrc` 加入：`eval "$(starship init zsh)"`
 
 ## 使用
 
