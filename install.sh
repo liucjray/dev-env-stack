@@ -27,7 +27,9 @@ if [[ "$(uname)" == "Darwin" ]]; then
   }
 
   backup_existing_file "$HOME/.wezterm.lua" "macOS WezTerm config"
+  backup_existing_file "$HOME/.claude/statusline.sh" "Claude Code statusline"
   stow -d "$stow_dir" -t "$HOME" macos
+  chmod +x "$HOME/.claude/statusline.sh" 2>/dev/null || true
 
   echo "Done."
   exit 0
