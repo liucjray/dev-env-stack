@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+# Clone a VirtualBuddy golden image into a fresh, independently identified VM.
+#
+#   vb-clone <golden> <new-name> [--boot]
+#   vb-clone golden-ubuntu agent-a --boot
+#
+# The copy is an APFS clone, so a 64 GB image costs no disk until the new VM
+# starts writing. What has to change is identity: two VMs carrying the same
+# UUID and MAC will fight over the same DHCP lease the moment both are up.
+
+set -euo pipefail
+
+library="${VB_LIBRARY:-$HOME/Library/Application Support/VirtualBuddy}"
+boot=false
+args=()
+
+for a in "$@"; do
+  case "$a" in
+    --boot) boot=true ;;
+    -*) echo "Unknown option: $a" >&2; exit 2 ;;
+    *) args+=("$a") ;;
+  esac
+done
+
+if [[ ${#args[@]} -ne 2 ]]; then
+  echo "usage: vb-clone <golden> <new-name> [--boot]" >&2
+  exit 2
+fi
+
+golden="${args[0]%.vbvm}"
+name="${args[1]%.vbvm}"
+src="$library/$golden.vbvm"
+dst="$library/$name.vbvm"
+
+[[ -d "$src" ]] || { echo "No such VM: $src" >&2; exit 1; }
+[[ -e "$dst" ]] && { echo "Already exists: $dst" >&2; exit 1; }
+
+if [[ ! -f "$src/.vbdata/Config.plist" ]]; then
+  echo "Not a VirtualBuddy bundle (no .vbdata/Config.plist): $src" >&2
+  exit 1
+fi
+
+# A golden image that still carries Install.plist never finished its OS install,
+# so every clone would inherit a half-installed disk.
+if [[ -f "$src/.vbdata/Install.plist" ]]; then
+  echo "Refusing to clone: $golden has not finished installing its OS." >&2
+  echo "Boot it, complete the install, shut it down, then clone." >&2
+  exit 1
+fi
+
+# ── copy ─────────────────────────────────────────────────────────────────────
+# -c asks for an APFS clone and fails rather than silently falling back to a
+# full byte copy, which on a 64 GB image is the difference between a second and
+# several minutes.
+echo "Cloning $golden -> $name"
+cp -Rc "$src" "$dst"
+
+# ── new identity ─────────────────────────────────────────────────────────────
+uuid="$(uuidgen)"
+plutil -replace uuid -string "$uuid" "$dst/.vbdata/Metadata.plist"
+
+# Locally administered unicast address, matching the shape VirtualBuddy itself
+# generates: low bit of the first octet clear (unicast), second bit set (local).
+mac="$(printf '%02X:%02X:%02X:%02X:%02X:%02X' \
+  $(( (RANDOM & 0xFC) | 0x02 )) $((RANDOM & 0xFF)) $((RANDOM & 0xFF)) \
+  $((RANDOM & 0xFF)) $((RANDOM & 0xFF)) $((RANDOM & 0xFF)))"
+plutil -replace hardware.networkDevices.0.macAddress -string "$mac" "$dst/.vbdata/Config.plist"
+
+# The boot volume's device id is per-machine too.
+plutil -replace hardware._storageDevices.0.id -string "$(uuidgen)" "$dst/.vbdata/Config.plist"
+
+# Screenshot and boot history describe the golden image, not this clone.
+rm -f "$dst"/.vbdata/*.heic
+plutil -remove firstBootDate "$dst/.vbdata/Metadata.plist" 2>/dev/null || true
+plutil -remove lastBootDate  "$dst/.vbdata/Metadata.plist" 2>/dev/null || true
+
+echo "  uuid $uuid"
+echo "  mac  $mac"
+
+# ── boot ─────────────────────────────────────────────────────────────────────
+if $boot; then
+  echo "Booting $name"
+  open "virtualbuddy://boot?name=$(printf '%s' "$name" | sed 's/ /%20/g')"
+
+  # The guest's hostname lives inside the disk image and is still the golden
+  # one, so find the clone by the MAC we just assigned and rename it in place.
+  echo -n "  waiting for lease"
+  for _ in $(seq 60); do
+    ip="$(arp -an | awk -v m="$(echo "$mac" | tr 'A-Z' 'a-z' | sed 's/0\([0-9a-f]\)/\1/g')" \
+      'tolower($4) == m { gsub(/[()]/, "", $2); print $2; exit }')"
+    [[ -n "$ip" ]] && break
+    printf '.'; sleep 2
+  done
+  echo
+
+  if [[ -n "${ip:-}" ]]; then
+    echo "  $name is at $ip"
+    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+        -i ~/.ssh/vb_agent_ed25519 "${VB_USER:-$USER}@$ip" \
+        "sudo hostnamectl set-hostname $name" 2>/dev/null \
+      && echo "  hostname set to $name" \
+      || echo "  could not set hostname over ssh — do it in the guest"
+  else
+    echo "  no DHCP lease seen yet; run 'arp -an | grep -i ${mac}' once it boots"
+  fi
+else
+  echo "Boot it with: open 'virtualbuddy://boot?name=$name'"
+fi
