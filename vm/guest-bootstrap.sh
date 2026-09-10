@@ -13,6 +13,12 @@ set -euo pipefail
 repo_url="${DEV_ENV_STACK_REPO:-https://github.com/liucjray/dev-env-stack.git}"
 repo_dir="${DEV_ENV_STACK_DIR:-$HOME/me/dev-env-stack}"
 
+# Without this, keyboard-configuration and friends open a debconf dialog and the
+# run stops dead waiting for a keypress — and the VM console mangles arrow keys,
+# so the dialog is barely navigable. Keep existing config files on conflict.
+export DEBIAN_FRONTEND=noninteractive
+apt_get() { sudo -E apt-get -y -o Dpkg::Options::=--force-confold "$@"; }
+
 log() { printf '\n\033[1;34m==>\033[0m %s\n' "$*"; }
 
 if [[ "$(uname -s)" != "Linux" ]]; then
@@ -21,14 +27,14 @@ if [[ "$(uname -s)" != "Linux" ]]; then
 fi
 
 # ── base packages ────────────────────────────────────────────────────────────
-# VirtualBuddy's bundled catalog ships the 26.04 initial ISO, not the 26.04.1
+# VirtualBuddy's bundled catalog pins whole releases rather than the newest
 # point release, so bring the image current before anything is cloned from it.
 log "Updating the base system"
-sudo apt-get update -qq
-sudo apt-get full-upgrade -y
+apt_get update -qq
+apt_get full-upgrade
 
 log "Installing base packages"
-sudo apt-get install -y --no-install-recommends \
+apt_get install --no-install-recommends \
   build-essential ca-certificates curl git gnupg jq ripgrep stow tmux unzip \
   openssh-server python3 python3-venv
 
@@ -61,7 +67,7 @@ fi
 if ! command -v node >/dev/null 2>&1; then
   log "Installing Node.js LTS"
   curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
-  sudo apt-get install -y nodejs
+  apt_get install nodejs
   # let npm -g install without sudo, so agents never need root
   npm config set prefix "$HOME/.local"
 fi
