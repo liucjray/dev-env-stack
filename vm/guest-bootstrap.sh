@@ -122,6 +122,9 @@ cat <<'SUMMARY'
 
 Before shutting down and cloning this VM:
 
+  0. exec bash -l    # REQUIRED — this script ran in a subshell, so the
+                     # PATH that reaches ~/.local/bin is not in your shell yet
+                     # and claude/codex/uv will look like they are missing
   1. claude          # sign in — the token is baked into every clone
   2. codex           # sign in
   3. git config --global user.name / user.email
