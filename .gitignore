@@ -3,3 +3,10 @@ Thumbs.db
 *.swp
 *.tmp
 
+# Stow folds ~/.config into this repo, so any tool configured there writes its
+# runtime state straight into the working tree. Keep the config, drop the rest.
+*.log
+*.sock
+stow/*/.config/**/session.json
+stow/*/.config/**/.plugins.lock
+
