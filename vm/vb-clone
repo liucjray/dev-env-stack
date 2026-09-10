@@ -40,9 +40,11 @@ if [[ ! -f "$src/.vbdata/Config.plist" ]]; then
   exit 1
 fi
 
-# A golden image that still carries Install.plist never finished its OS install,
-# so every clone would inherit a half-installed disk.
-if [[ -f "$src/.vbdata/Install.plist" ]]; then
+# Cloning a half-installed image hands every clone a broken disk. Install.plist
+# is not the signal for this: VirtualBuddy leaves it behind after a completed
+# install, merely advancing its step counter. Metadata.plist is authoritative.
+finished="$(plutil -extract installFinished raw "$src/.vbdata/Metadata.plist" 2>/dev/null || echo false)"
+if [[ "$finished" != "true" ]]; then
   echo "Refusing to clone: $golden has not finished installing its OS." >&2
   echo "Boot it, complete the install, shut it down, then clone." >&2
   exit 1
@@ -68,6 +70,10 @@ plutil -replace hardware.networkDevices.0.macAddress -string "$mac" "$dst/.vbdat
 
 # The boot volume's device id is per-machine too.
 plutil -replace hardware._storageDevices.0.id -string "$(uuidgen)" "$dst/.vbdata/Config.plist"
+
+# Leftover installer state still names the golden image and would offer to
+# resume an install that already completed.
+rm -f "$dst/.vbdata/Install.plist"
 
 # Screenshot and boot history describe the golden image, not this clone.
 rm -f "$dst"/.vbdata/*.heic
