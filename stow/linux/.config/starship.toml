@@ -1,0 +1,41 @@
+format = """
+[ $directory ](fg:#f8fafc bg:#6d28d9 bold)[](fg:#6d28d9 bg:#1e1b4b)$git_branch$git_status[](fg:#1e1b4b bg:#111827)$time[](fg:#111827)
+$character"""
+add_newline = false
+command_timeout = 2000
+
+[directory]
+style = "fg:#f8fafc bg:#6d28d9 bold"
+truncate_to_repo = false
+truncation_length = 9999
+format = "[ $path ]($style)"
+
+[git_branch]
+format = "[ $symbol$branch ](fg:#7dd3fc bg:#1e1b4b bold)"
+symbol = " "
+
+[git_status]
+format = "[$all_status$ahead_behind](fg:#f472b6 bg:#1e1b4b bold)"
+conflicted = "⚡"
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+untracked = "?${count}"
+stashed = "📦"
+modified = "!${count}"
+staged = "+${count}"
+renamed = "»${count}"
+deleted = "✘${count}"
+
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
+
+[time]
+disabled = false
+format = "[  $time ](fg:#67e8f9 bg:#111827 bold)"
+time_format = "%H:%M:%S"
+
+[cmd_duration]
+min_time = 2000
+format = "[  ${duration}](fg:#fde047 bg:#111827 bold)"
