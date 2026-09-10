@@ -10,3 +10,7 @@ Thumbs.db
 stow/*/.config/**/session.json
 stow/*/.config/**/.plugins.lock
 
+# gh keeps its token in the keychain, but falls back to writing it here in
+# plaintext whenever the keyring is unavailable.
+stow/*/.config/gh/hosts.yml
+
