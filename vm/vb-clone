@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Clone a VirtualBuddy golden image into a fresh, independently identified VM.
 #
-#   vb-clone <golden> <new-name> [--boot]
+#   vb-clone <golden> <new-name> [--boot] [--force]
 #   vb-clone golden-ubuntu agent-a --boot
 #
 # The copy is an APFS clone, so a 64 GB image costs no disk until the new VM
@@ -12,18 +12,20 @@ set -euo pipefail
 
 library="${VB_LIBRARY:-$HOME/Library/Application Support/VirtualBuddy}"
 boot=false
+force=false
 args=()
 
 for a in "$@"; do
   case "$a" in
     --boot) boot=true ;;
+    --force) force=true ;;
     -*) echo "Unknown option: $a" >&2; exit 2 ;;
     *) args+=("$a") ;;
   esac
 done
 
 if [[ ${#args[@]} -ne 2 ]]; then
-  echo "usage: vb-clone <golden> <new-name> [--boot]" >&2
+  echo "usage: vb-clone <golden> <new-name> [--boot] [--force]" >&2
   exit 2
 fi
 
@@ -48,6 +50,19 @@ if [[ "$finished" != "true" ]]; then
   echo "Refusing to clone: $golden has not finished installing its OS." >&2
   echo "Boot it, complete the install, shut it down, then clone." >&2
   exit 1
+fi
+
+# A running guest writes to its boot disk every few seconds, and copying one
+# mid-write captures a torn filesystem. VirtualBuddy records no run state the
+# host can read — lastBootDate goes stale — so the disk's mtime is the only
+# signal available.
+if ! $force; then
+  disk_mtime="$(stat -f %m "$src"/Disk*.img 2>/dev/null | sort -n | tail -1)"
+  if [[ -n "$disk_mtime" ]] && (( $(date +%s) - disk_mtime < 15 )); then
+    echo "Refusing to clone: $golden was written to seconds ago and is probably running." >&2
+    echo "Shut it down, or pass --force if you know it is stopped." >&2
+    exit 1
+  fi
 fi
 
 # ── copy ─────────────────────────────────────────────────────────────────────
