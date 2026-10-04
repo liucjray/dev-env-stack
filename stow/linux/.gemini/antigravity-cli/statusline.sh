@@ -116,7 +116,7 @@ fi
   read -r PCT_TIER
 } <<< "$PARSED_PAYLOAD"
 
-STATE_UPPER=${STATE^^}
+STATE_UPPER=$(printf '%s' "$STATE" | tr '[:lower:]' '[:upper:]')
 case "$STATE" in
   idle) S="${FG_BRIGHT_GREEN}${B}● READY${R}" ;;
   thinking) S="${FG_BRIGHT_YELLOW}${B}◆ THINKING${R}" ;;
@@ -205,9 +205,11 @@ DOT="${FG_GRAY} · ${R}"
 
 print_quota_lines() {
   local quota_line
-  for quota_line in "${QUOTA_LINES[@]}"; do
-    printf '%s\n' "${FG_GRAY}quota ${NUM_COLOR}${quota_line}${R}"
-  done
+  if [ "${#QUOTA_LINES[@]}" -gt 0 ]; then
+    for quota_line in "${QUOTA_LINES[@]}"; do
+      printf '%s\n' "${FG_GRAY}quota ${NUM_COLOR}${quota_line}${R}"
+    done
+  fi
 }
 
 LINE1="${S}${M}${V}"
