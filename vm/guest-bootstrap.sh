@@ -107,10 +107,10 @@ fi
 # Stow folds a whole directory when the target does not exist, which would make
 # ~/.config a symlink into the repo and let every tool write its state there.
 # Pre-creating the real directories keeps stow to file-level links.
-mkdir -p "$HOME/.config" "$HOME/.bashrc.d" "$HOME/.claude"
+mkdir -p "$HOME/.config" "$HOME/.bashrc.d" "$HOME/.claude" "$HOME/.gemini/antigravity-cli"
 
 stow -d "$repo_dir/stow" -t "$HOME" --restow linux
-chmod +x "$HOME/.claude/statusline.sh" 2>/dev/null || true
+chmod +x "$HOME/.claude/statusline.sh" "$HOME/.gemini/antigravity-cli/statusline.sh" 2>/dev/null || true
 
 if ! grep -q 'bashrc.d/dev-env-stack.sh' "$HOME/.bashrc"; then
   echo 'source ~/.bashrc.d/dev-env-stack.sh' >> "$HOME/.bashrc"
